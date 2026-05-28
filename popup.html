@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>YT Skipper</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Sora:wght@400;500;600&display=swap');
+
+    :root {
+      --bg:       #0c0c0e;
+      --surface:  #141417;
+      --border:   #232328;
+      --border2:  #2e2e35;
+      --accent:   #ff3040;
+      --accent2:  #ff6b6b;
+      --text:     #eeeef0;
+      --muted:    #64646e;
+      --muted2:   #48484f;
+      --green:    #34d399;
+      --radius:   10px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      width: 290px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Sora', sans-serif;
+      padding: 18px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Header ── */
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      margin-bottom: 18px;
+    }
+    .logo-wrap {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, #ff3040 0%, #c0001a 100%);
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 17px;
+      flex-shrink: 0;
+      box-shadow: 0 2px 12px rgba(255,48,64,0.35);
+    }
+    .header-text { flex: 1; }
+    .app-name {
+      font-family: 'IBM Plex Mono', monospace;
+      font-weight: 600;
+      font-size: 14px;
+      letter-spacing: -0.2px;
+      color: var(--text);
+    }
+    .app-version {
+      font-size: 10px;
+      color: var(--muted);
+      margin-top: 1px;
+      font-family: 'IBM Plex Mono', monospace;
+    }
+
+    /* ── Cards ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 13px 14px;
+      margin-bottom: 8px;
+    }
+
+    /* ── Toggle row ── */
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .toggle-info {}
+    .toggle-label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+    }
+    .toggle-sub {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 2px;
+      line-height: 1.4;
+    }
+
+    /* Switch */
+    .switch {
+      position: relative;
+      width: 42px;
+      height: 24px;
+      flex-shrink: 0;
+    }
+    .switch input { opacity: 0; width: 0; height: 0; position: absolute; }
+    .track {
+      position: absolute;
+      inset: 0;
+      background: var(--border2);
+      border-radius: 24px;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+    .track::after {
+      content: '';
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      top: 3px;
+      left: 3px;
+      background: var(--muted2);
+      border-radius: 50%;
+      transition: transform 0.2s ease, background 0.2s ease;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+    }
+    .switch input:checked + .track { background: var(--accent); }
+    .switch input:checked + .track::after {
+      transform: translateX(18px);
+      background: #fff;
+    }
+
+    /* ── Seconds control ── */
+    .sec-label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 13px;
+    }
+    .sec-control {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 13px;
+    }
+    .adj-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      border: 1px solid var(--border2);
+      background: var(--bg);
+      color: var(--text);
+      font-size: 20px;
+      font-weight: 300;
+      line-height: 1;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.12s, border-color 0.12s, transform 0.1s;
+      flex-shrink: 0;
+      user-select: none;
+    }
+    .adj-btn:hover { background: var(--border); border-color: var(--border2); }
+    .adj-btn:active { background: var(--accent); border-color: var(--accent); transform: scale(0.94); }
+    .adj-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+    .sec-display {
+      flex: 1;
+      text-align: center;
+    }
+    .sec-number {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 30px;
+      font-weight: 600;
+      color: var(--accent);
+      line-height: 1;
+      letter-spacing: -1px;
+    }
+    .sec-unit {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 3px;
+      font-weight: 400;
+    }
+
+    /* Range slider */
+    .range-input {
+      width: 100%;
+      -webkit-appearance: none;
+      appearance: none;
+      height: 3px;
+      background: var(--border2);
+      border-radius: 3px;
+      outline: none;
+      cursor: pointer;
+    }
+    .range-input::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 15px;
+      height: 15px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+      box-shadow: 0 0 0 3px rgba(255,48,64,0.18);
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .range-input::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+      box-shadow: 0 0 0 5px rgba(255,48,64,0.22);
+    }
+    .range-input::-moz-range-thumb {
+      width: 15px;
+      height: 15px;
+      border: none;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+    }
+    .range-hints {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 6px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 9px;
+      color: var(--muted2);
+    }
+
+    /* ── Disabled state ── */
+    .card.disabled {
+      opacity: 0.38;
+      pointer-events: none;
+    }
+
+    /* ── Status ── */
+    .status-bar {
+      height: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 500;
+      color: transparent;
+      transition: color 0.25s;
+      margin-top: 2px;
+    }
+    .status-bar.visible { color: var(--green); }
+
+    /* ── Divider ── */
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 4px 0 12px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <div class="logo-wrap">⏩</div>
+    <div class="header-text">
+      <div class="app-name">YT Skipper</div>
+      <div class="app-version">v1.0.0</div>
+    </div>
+  </div>
+
+  <!-- Enable / Disable -->
+  <div class="card">
+    <div class="toggle-row">
+      <div class="toggle-info">
+        <div class="toggle-label">Enable YT Skipper</div>
+        <div class="toggle-sub">Skip the start of every video</div>
+      </div>
+      <label class="switch" aria-label="Enable YT Skipper">
+        <input type="checkbox" id="toggleEnabled" checked />
+        <span class="track"></span>
+      </label>
+    </div>
+  </div>
+
+  <!-- Seconds configuration -->
+  <div class="card" id="secCard">
+    <div class="sec-label">Seconds to skip</div>
+    <div class="sec-control">
+      <button class="adj-btn" id="btnMinus" aria-label="Decrease">−</button>
+      <div class="sec-display">
+        <div class="sec-number" id="secValue">5</div>
+        <div class="sec-unit">seconds</div>
+      </div>
+      <button class="adj-btn" id="btnPlus" aria-label="Increase">+</button>
+    </div>
+    <input
+      type="range"
+      class="range-input"
+      id="secRange"
+      min="1"
+      max="60"
+      value="5"
+      aria-label="Skip duration"
+    />
+    <div class="range-hints">
+      <span>1s</span>
+      <span>15s</span>
+      <span>30s</span>
+      <span>45s</span>
+      <span>60s</span>
+    </div>
+  </div>
+
+  <div class="status-bar" id="statusBar">✓ Saved</div>
+
+  <script src="browser-polyfill.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>
